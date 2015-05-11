@@ -1,0 +1,25 @@
+<input type="hidden" id="default_number_rows" value=<%= @default_number_rows %>>
+<input type="hidden" id="default_number_columns" value=<%= @column_headers.length %>>
+
+
+<%= render "buttons" %>
+
+<table id="cihuibiao">
+    <thead>
+        <tr><% @column_headers.each do |h| %>
+                <th id="<%= h %>"><%= h %></th>
+            <% end %>
+        </tr>
+    </thead>
+    <tbody>
+        <% for i in 1..@default_number_rows do %>
+            <tr><% for j in 0..@column_headers.length-1 do %>
+                    <td><input id="<%= "#{i}#{j}" %>", type="text"></td>
+                <% end %>
+            </tr>
+        <% end %>
+    </tbody>
+</table>
+
+<%= render "buttons" %>
+

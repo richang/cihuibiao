@@ -1,0 +1,259 @@
+var inputmode;
+var car;
+var default_number_rows;
+var default_number_columns;
+
+$( document ).ready(function() {
+    default_number_rows = $('#default_number_rows').val()
+    default_number_columns = $('#default_number_columns').val()
+    initiation();
+});
+
+function initiation() {
+    window.getSelection().removeAllRanges();
+    getArrayofClass("edit_table").forEach(hide);
+    getArrayofClass("add_rows").forEach(show);
+    inputmode = 1;
+    for (var r = 1; r < getTable().rows.length; r++) {
+        setup(r.toString());
+    }
+    getInput('1','traditional').focus();
+}
+
+function getArrayofClass(name) {
+    return Array.prototype.slice.call(document.getElementsByClassName(name));
+}
+
+function selectElementContents(el) {
+    if (inputmode) changeInputsToText();
+    var body = document.body, range, sel;
+    if (document.createRange && window.getSelection) {
+        range = document.createRange();
+        sel = window.getSelection();
+        sel.removeAllRanges();
+        try {
+            range.selectNodeContents(el);
+            sel.addRange(range);
+        } catch (e) {
+            range.selectNode(el);
+            sel.addRange(range);
+        }
+    } else if (body.createTextRange) {
+        range = body.createTextRange();
+        range.moveToElementText(el);
+        range.select();
+    }
+}
+
+function getInput(row, column) {
+    return document.getElementById(row + getColumnNumber(column));
+}
+
+function getTable() {
+    return document.getElementById('cihuibiao');
+}
+
+function getColumnNumber(name) {
+    if (name == 'traditional')
+        return '0';
+    else if (name == 'simplified')
+        return '1';
+    else if (name == 'pinyin')
+        return '2';
+    else
+        alert('Header does not exist');
+}
+
+function setup(row) {
+    var traditional = getInput(row, 'traditional');
+    var pinyin = getInput(row, 'pinyin');
+    traditional.oninput = function() {
+        getSimplifiedPinyin(row);
+    };
+    pinyin.oninput = function() {
+        numlat(row);
+    };
+}
+
+function getSimplifiedPinyin(row) {
+
+	var traditional = getInput(row, 'traditional');
+	var simplified = getInput(row, 'simplified');
+	var pinyin = getInput(row, 'pinyin');
+	$.ajax({
+		type: 'POST',
+		url: 'home/fill',
+		data: {traditional: traditional.value},
+		dataType: 'json',
+		success: function(data) {
+			simplified.value=data.simplified;
+			pinyin.value=data.pinyin;
+		},
+		error: function() {
+			alert('Ajax error!');
+		}
+
+	});
+}
+
+function getTextValue(r,c) {
+    var table =  document.getElementById('cihuibiao');
+    return table.rows[r].cells[c].innerHTML;
+}
+
+function getInputValue(r,c) {
+    var table = document.getElementById('cihuibiao');
+    return table.rows[r].cells[c].children[0].value;
+}
+
+function hide(element, index, array) {
+    element.style.display="none";
+}
+
+function show(element, index, array) {
+    element.style.display="inline";
+}
+
+function changeInputsToText() {
+    inputmode = 0;
+    getArrayofClass("edit_table").forEach(show);
+    getArrayofClass("add_rows").forEach(hide);
+    var table =  document.getElementById('cihuibiao');
+    for (var r = 1, n = table.rows.length; r < n; r++) {
+        if (getInputValue(r,0) == "") {
+            while (table.rows[r]) {
+                table.deleteRow(r);
+            }
+            break;
+        }
+        else {
+            for (var c = 0, m = table.rows[r].cells.length; c < m; c++) {
+                table.rows[r].cells[c].innerHTML = getInputValue(r,c);
+            }
+        }
+    }
+}
+
+function changeTextToInputs() {
+    var table = getTable();
+    for (var r = 1, n = table.rows.length; r < n; r++) {
+        for (var c = 0, m = table.rows[r].cells.length; c < m; c++) {
+            table.rows[r].cells[c].innerHTML = "<input id='" + r.toString() + c.toString() + "', type='text', value='" + getTextValue(r,c) + "'>"
+        }
+    }
+    while (table.rows.length <= default_number_rows)
+        addRow();
+    initiation();
+}
+
+function resetTable() {
+    var table = getTable();
+    while (table.rows[1])
+        table.deleteRow(1);
+    changeTextToInputs();
+}
+
+function addRow() {
+    var table = getTable();
+    var row = table.insertRow(-1);
+    var r = table.rows.length - 1;
+    for (var c = 0; c < default_number_columns; c++) {
+        row.insertCell(c);
+        table.rows[r].cells[c].innerHTML = "<input id='" + r.toString() + c.toString() + "', type='text', value=''>"
+    }
+    setup(r.toString());
+}
+
+function addRows() {
+    for (var i = 0; i < 5; i++)
+        addRow();
+}
+
+function numlat (row) {
+    var pinyin = getInput(row, 'pinyin');
+    var old = pinyin.value;
+    car = pinyin.value.toLowerCase();
+    car = car.replace(/a5/g, "a");
+    car = car.replace(/e5/g, "e");
+    car = car.replace(/i5/g, "i");
+    car = car.replace(/o5/g, "o");
+    car = car.replace(/u5/g, "u");
+    car = car.replace(/v5/g, "ü");
+    car = car.replace(/a1/g, "ā");
+    car = car.replace(/a2/g, "á");
+    car = car.replace(/a3/g, "ǎ");
+    car = car.replace(/a4/g, "à"); 
+    car = car.replace(/e1/g, "ē");
+    car = car.replace(/e2/g, "é");
+    car = car.replace(/e3/g, "ě");
+    car = car.replace(/e4/g, "è"); 
+    car = car.replace(/i1/g, "ī");
+    car = car.replace(/i2/g, "í");
+    car = car.replace(/i3/g, "ǐ");
+    car = car.replace(/i4/g, "ì"); 
+    car = car.replace(/o1/g, "ō"); 
+    car = car.replace(/o2/g, "ó");
+    car = car.replace(/o3/g, "ǒ");
+    car = car.replace(/o4/g, "ò");
+    car = car.replace(/u1/g, "ū");
+    car = car.replace(/u2/g, "ú");
+    car = car.replace(/u3/g, "ǔ");
+    car = car.replace(/u4/g, "ù"); 
+    car = car.replace(/v1/g, "ǖ"); 
+    car = car.replace(/v2/g, "ǘ");
+    car = car.replace(/v3/g, "ǚ");
+    car = car.replace(/v4/g, "ǜ"); 
+    car = car.replace(/an1/g, "ān");
+    car = car.replace(/an2/g, "án");
+    car = car.replace(/an3/g, "ǎn");
+    car = car.replace(/an4/g, "àn");
+    car = car.replace(/ang1/g, "āng");
+    car = car.replace(/ang2/g, "áng");
+    car = car.replace(/ang3/g, "ǎng");
+    car = car.replace(/ang4/g, "àng");
+    car = car.replace(/en1/g, "ēn");
+    car = car.replace(/en2/g, "én");
+    car = car.replace(/en3/g, "ěn");
+    car = car.replace(/en4/g, "èn");
+    car = car.replace(/eng1/g, "ēng");
+    car = car.replace(/eng2/g, "éng");
+    car = car.replace(/eng3/g, "ěng");
+    car = car.replace(/eng4/g, "èng");
+    car = car.replace(/in1/g, "īn");
+    car = car.replace(/in2/g, "ín");
+    car = car.replace(/in3/g, "ǐn");
+    car = car.replace(/in4/g, "ìn"); 
+    car = car.replace(/ing1/g, "īng");
+    car = car.replace(/ing2/g, "íng");
+    car = car.replace(/ing3/g, "ǐng");
+    car = car.replace(/ing4/g, "ìng");
+    car = car.replace(/ong1/g, "ōng");
+    car = car.replace(/ong2/g, "óng");
+    car = car.replace(/ong3/g, "ǒng");
+    car = car.replace(/ong4/g, "òng");
+    car = car.replace(/un1/g, "ūn");
+    car = car.replace(/un2/g, "ún");
+    car = car.replace(/un3/g, "ǔn");
+    car = car.replace(/un4/g, "ùn"); 
+    car = car.replace(/er2/g, "ér");
+    car = car.replace(/er3/g, "ěr");
+    car = car.replace(/er4/g, "èr");
+    car = car.replace(/aō/g, "āo"); 
+    car = car.replace(/aó/g, "áo");
+    car = car.replace(/aǒ/g, "ǎo");
+    car = car.replace(/aò/g, "ào");
+    car = car.replace(/oū/g, "ōu"); 
+    car = car.replace(/oú/g, "óu");
+    car = car.replace(/oǔ/g, "ǒu");
+    car = car.replace(/où/g, "òu");
+    car = car.replace(/aī/g, "āi");
+    car = car.replace(/aí/g, "ái");
+    car = car.replace(/aǐ/g, "ǎi");
+    car = car.replace(/aì/g, "ài"); 
+    car = car.replace(/eī/g, "ēi");
+    car = car.replace(/eí/g, "éi");
+    car = car.replace(/eǐ/g, "ěi");
+    car = car.replace(/eì/g, "èi"); 
+    if (old != car)
+        pinyin.value=car;
+}

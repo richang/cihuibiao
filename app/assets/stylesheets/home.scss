@@ -1,0 +1,42 @@
+// Place all the styles related to the Welcome controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+
+table {
+    border-collapse: collapse;
+    width: 625px;
+    table-layout: fixed;
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
+tr, th { 
+	line-height: 1.2em; 
+} 
+
+td {
+    width: 100%;
+    padding: 0;
+}
+
+td input {
+    width: 100%;
+    line-height: 1em;
+    border: none; 
+    margin: 0;
+}
+
+td input:focus{
+    outline: 0;
+}
+
+#Traditional, #Simplified {
+	width: 15%;
+}
+
+#Pinyin {
+	width: 20%;
+}
