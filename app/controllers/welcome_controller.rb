@@ -3,9 +3,12 @@ class WelcomeController < ApplicationController
   end
 
   def fill
-  	entry = Entry.find_by(traditional: params[:traditional])
-  	render :json => {"simplified": entry.simplified,
-  					 "pinyin": entry.pinyin}
+  	chars = params[:traditional].chars
+  	entries = chars.map { |ch| Entry.find_by(traditional: ch) }
+  	simplified = entries.map { |e| if e then e.simplified else "" end }
+  	pinyin = entries.map { |e| if e then e.pinyin else "" end }
+  	render :json => {"simplified": simplified.join,
+  					 "pinyin": pinyin.join(' ')}
   end
 
 end

@@ -90,7 +90,7 @@ end
 
 
 
-File.foreach('entries') {|line| 
+File.foreach('entries') { |line| 
 	entry = line.split(' ')
-	Entry.create!(traditional: entry[0], simplified: entry[1], pinyin: numlat(entry[2][1..-2]))
+	Entry.create!(traditional: entry[0], simplified: entry[1], pinyin: numlat(entry[2][1..-2].downcase))
 	}
