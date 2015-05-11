@@ -54,25 +54,70 @@ function getTable() {
 }
 
 function getColumnNumber(name) {
-    if (name == 'traditional')
+    if (name == 'traditional' || name == '0')
         return '0';
-    else if (name == 'simplified')
+    else if (name == 'simplified' || name == '1')
         return '1';
-    else if (name == 'pinyin')
+    else if (name == 'pinyin' || name == '2')
         return '2';
+    else if (name == 'definition' || name == '3')
+        return '3';
     else
         alert('Header does not exist');
 }
 
 function setup(row) {
     var traditional = getInput(row, 'traditional');
+    var simplified = getInput(row, 'simplified');
     var pinyin = getInput(row, 'pinyin');
+    var definition = getInput(row, 'definition');
+    var all_cells = [traditional, simplified, pinyin, definition];
     traditional.oninput = function() {
         getSimplifiedPinyin(row);
     };
     pinyin.oninput = function() {
         numlat(row);
     };
+    all_cells.forEach(addNavigationListener, parseInt(row));
+}
+
+function addNavigationListener(element, index, array) {
+    var row = this;
+    var column = index;
+    element.onkeydown = function() {
+        navigation(row, column);
+    };
+}
+
+function navigation(row, column) {
+    var table = getTable();
+    var x = event.which || event.keyCode;
+    if (x == 13 || x == 40) {
+        event.preventDefault();
+        var next_row = row + 1;
+        if (next_row >= table.rows.length)
+            addRows();
+        getInput(next_row.toString(), column.toString()).focus();
+    }
+    else if (x == 37) {
+        event.preventDefault();
+        var previous_column = column - 1;
+        if (previous_column >= 0)
+            getInput(row.toString(), previous_column.toString()).focus();
+    }
+    else if (x == 39) {
+        event.preventDefault();
+        var next_column = column + 1;
+        if (next_column < default_number_columns)
+            getInput(row.toString(), next_column.toString()).focus();
+    }
+    else if (x == 38) {
+        event.preventDefault();
+        var previous_row = row - 1;
+        if (previous_row >= 1)
+            getInput(previous_row.toString(), column.toString()).focus();
+    }
+
 }
 
 function getSimplifiedPinyin(row) {
