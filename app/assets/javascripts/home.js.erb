@@ -73,8 +73,11 @@ function setup(row) {
     var definition = getInput(row, 'definition');
     var all_cells = [traditional, simplified, pinyin, definition];
     traditional.oninput = function() {
-        getSimplifiedPinyin(row);
+        autofill(row, 'traditional', 'simplified');
     };
+    simplified.oninput = function() {
+        autofill(row, 'simplified', 'traditional');
+    }
     pinyin.oninput = function() {
         numlat(row);
     };
@@ -120,18 +123,22 @@ function navigation(row, column) {
 
 }
 
-function getSimplifiedPinyin(row) {
+function autofill(row, orig_col, col_to_fill) {
 
-	var traditional = getInput(row, 'traditional');
-	var simplified = getInput(row, 'simplified');
+	var orig_col_input = getInput(row, orig_col);
+	var col_to_fill_input = getInput(row, col_to_fill);
 	var pinyin = getInput(row, 'pinyin');
 	$.ajax({
 		type: 'POST',
-		url: 'home/fill',
-		data: {traditional: traditional.value},
+		url: 'home/autofill',
+		data: {
+            orig_col: orig_col,
+            col_to_fill: col_to_fill,
+            chars: orig_col_input.value
+        },
 		dataType: 'json',
 		success: function(data) {
-			simplified.value=data.simplified;
+            col_to_fill_input.value=data.chars;
 			pinyin.value=data.pinyin;
 		},
 		error: function() {

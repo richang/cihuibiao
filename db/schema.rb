@@ -11,7 +11,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150510115409) do
+ActiveRecord::Schema.define(version: 20150812171609) do
+
+  create_table "definitions", force: :cascade do |t|
+    t.string  "definition"
+    t.integer "count"
+    t.integer "entry_id"
+  end
+
+  add_index "definitions", ["entry_id"], name: "index_definitions_on_entry_id"
 
   create_table "entries", force: :cascade do |t|
     t.string   "traditional"
@@ -19,6 +27,7 @@ ActiveRecord::Schema.define(version: 20150510115409) do
     t.string   "pinyin"
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
+    t.integer  "count"
   end
 
   add_index "entries", ["simplified"], name: "index_entries_on_simplified"

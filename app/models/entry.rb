@@ -1,5 +1,7 @@
 class Entry < ActiveRecord::Base
 
+	has_many :definitions
+
 	def self.column_headers 
 		['Traditional','Simplified','Pinyin','Definition']
 	end
