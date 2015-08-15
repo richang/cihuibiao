@@ -1,0 +1,17 @@
+# Replace first occurance of pattern in each line
+sed -i 's/, / /' chinese_words_frequency_list
+sed -i 's/(/[/' chinese_words_frequency_list
+sed -i 's/)/]/' chinese_words_frequency_list
+
+# Remove duplicate lines
+awk '!x[$0]++' chinese_words_frequency_list
+
+
+
+
+# Replace multiple spaces with one
+sed -i 's/  */ /g' character_syllable_freq
+
+# Remove lines with less than N fields, remove unneeded fields
+awk 'NF > 5 {for (i = 4; i <= NF; i += 3) printf ("%s %s %s%c", $1, $i, $(i+1), i + 3 <= NF ? " " : "\n");}' character_syllable_freq_ORIG
+awk 'NF > 5 {for (i = 4; i <= NF; i += 3) printf ("%s %s %s\n", $1, $i, $(i+1));}' character_syllable_freq_ORIG

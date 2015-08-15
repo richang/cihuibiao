@@ -95,31 +95,38 @@ function addNavigationListener(element, index, array) {
 function navigation(row, column) {
     var table = getTable();
     var x = event.which || event.keyCode;
-    if (x == 13 || x == 40) {
-        event.preventDefault();
-        var next_row = row + 1;
-        if (next_row >= table.rows.length)
-            addRows();
-        getInput(next_row.toString(), column.toString()).focus();
-    }
-    else if (x == 37) {
-        event.preventDefault();
-        var previous_column = column - 1;
-        if (previous_column >= 0)
-            getInput(row.toString(), previous_column.toString()).focus();
-    }
-    else if (x == 39) {
-        event.preventDefault();
-        var next_column = column + 1;
-        if (next_column < default_number_columns)
-            getInput(row.toString(), next_column.toString()).focus();
-    }
-    else if (x == 38) {
-        event.preventDefault();
-        var previous_row = row - 1;
-        if (previous_row >= 1)
-            getInput(previous_row.toString(), column.toString()).focus();
-    }
+    // if (x == 13) {
+    //     event.preventDefault();
+    //     var next_row = row + 1;
+    //     if (next_row >= table.rows.length)
+    //         addRows();
+    //     getInput(next_row.toString(), column.toString()).focus();
+    // }
+    // if (x == 13 || x == 40) {
+    //     event.preventDefault();
+    //     var next_row = row + 1;
+    //     if (next_row >= table.rows.length)
+    //         addRows();
+    //     getInput(next_row.toString(), column.toString()).focus();
+    // }
+    // else if (x == 37) {
+    //     event.preventDefault();
+    //     var previous_column = column - 1;
+    //     if (previous_column >= 0)
+    //         getInput(row.toString(), previous_column.toString()).focus();
+    // }
+    // else if (x == 39) {
+    //     event.preventDefault();
+    //     var next_column = column + 1;
+    //     if (next_column < default_number_columns)
+    //         getInput(row.toString(), next_column.toString()).focus();
+    // }
+    // else if (x == 38) {
+    //     event.preventDefault();
+    //     var previous_row = row - 1;
+    //     if (previous_row >= 1)
+    //         getInput(previous_row.toString(), column.toString()).focus();
+    // }
 
 }
 
@@ -128,8 +135,10 @@ function autofill(row, orig_col, col_to_fill) {
 	var orig_col_input = getInput(row, orig_col);
 	var col_to_fill_input = getInput(row, col_to_fill);
 	var pinyin = getInput(row, 'pinyin');
+    var definition = getInput(row, 'definition');
 	$.ajax({
 		type: 'POST',
+        beforeSend: function(xhr) {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'))},
 		url: 'home/autofill',
 		data: {
             orig_col: orig_col,
@@ -138,8 +147,53 @@ function autofill(row, orig_col, col_to_fill) {
         },
 		dataType: 'json',
 		success: function(data) {
-            col_to_fill_input.value=data.chars;
-			pinyin.value=data.pinyin;
+            // console.log(data)
+            // autofill_data=JSON.parse(data)
+            autofill_data=data
+            console.log(autofill_data)
+            var full_col_to_fill = ""
+            var full_pinyin = ""
+            var generate_autocomplete = function(index) {
+                autofill_choices=autofill_data[index].map(function(e) {return {label: e.col_to_fill+" "+e.pinyin, col_to_fill: e.col_to_fill, pinyin: e.pinyin}})
+                console.log(autofill_choices)
+                // if (autofill_choices.length == 1) {
+                //     col_to_fill_input.value=autofill_choices[0].col_to_fill
+                //     pinyin.value=autofill_choices[0].pinyin
+                // } else {
+                    $("#"+row+getColumnNumber(orig_col)).autocomplete({
+                        source: autofill_choices,
+                        autoFocus: true,
+                        delay: 0,
+                        minLength: 0,
+                        select: function(event, ui) {
+                            event.preventDefault();
+                            if (index == autofill_data.length - 1) {
+                                col_to_fill_input.value=full_col_to_fill + ui.item.col_to_fill
+                                pinyin.value=full_pinyin + " " + ui.item.pinyin
+                                var table = getTable();
+                                var next_row = parseInt(row) + 1;
+                                if (next_row >= table.rows.length)
+                                    addRows();
+                                getInput(next_row.toString(), orig_col).focus();
+                                $("#"+row+getColumnNumber(orig_col)).autocomplete( "destroy" );
+                            } else {
+                                full_col_to_fill = full_col_to_fill + ui.item.col_to_fill
+                                full_pinyin = full_pinyin + " " + ui.item.pinyin
+                                $("#"+row+getColumnNumber(orig_col)).autocomplete( "destroy" );
+                                generate_autocomplete(index+1)
+                            }
+                        },
+                        focus: function(event, ui) {
+                            event.preventDefault();
+                        }
+                    })
+                    $("#"+row+getColumnNumber(orig_col)).autocomplete( "search", "" );
+                // }
+            }
+            generate_autocomplete(0)
+            
+			// pinyin.value=data.pinyin_def;
+   //          definition.value=data.pinyin_def;
 		},
 		error: function() {
 			alert('Ajax error!');

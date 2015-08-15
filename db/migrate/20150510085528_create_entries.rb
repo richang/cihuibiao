@@ -4,8 +4,10 @@ class CreateEntries < ActiveRecord::Migration
       t.string :traditional
       t.string :simplified
       t.string :pinyin
-
-      t.timestamps null: false
+      t.integer :freq_count
     end
+
+    add_index :entries, :traditional
+    add_index :entries, :simplified
   end
 end
