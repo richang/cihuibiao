@@ -149,12 +149,27 @@ function autofill(row, orig_col, col_to_fill) {
 		success: function(data) {
             // console.log(data)
             // autofill_data=JSON.parse(data)
-            autofill_data=data
+            var autofill_data=data
             console.log(autofill_data)
             var full_col_to_fill = ""
             var full_pinyin = ""
             var generate_autocomplete = function(index) {
-                autofill_choices=autofill_data[index].map(function(e) {return {label: e.col_to_fill+" "+e.pinyin, col_to_fill: e.col_to_fill, pinyin: e.pinyin}})
+                var entry_history_array
+                var autofill_choices=autofill_data[index].map(function(e) {
+                    e.label = e.col_to_fill+" "+e.pinyin
+                    return e
+                })
+                if (supports_html5_storage) {
+                    var entry_history = localStorage[orig_col[0] + autofill_choices[0].orig_col]
+                    entry_history_array = entry_history != undefined ? entry_history.split(" ") : []
+                    autofill_choices = autofill_choices.map(function(e) {
+                        e.entry_history = entry_history_array.indexOf(e.col_to_fill+e.pinyin)
+                        return e
+                    }).sort(function(a,b) {
+                        var i = b.entry_history - a.entry_history
+                        return i != 0 ? i : b.freq_count - a.freq_count
+                    })
+                }
                 console.log(autofill_choices)
                 // if (autofill_choices.length == 1) {
                 //     col_to_fill_input.value=autofill_choices[0].col_to_fill
@@ -167,6 +182,14 @@ function autofill(row, orig_col, col_to_fill) {
                         minLength: 0,
                         select: function(event, ui) {
                             event.preventDefault();
+                            if (supports_html5_storage && autofill_choices.length > 1) {
+                                var i = entry_history_array.indexOf(ui.item.col_to_fill+ui.item.pinyin)
+                                if (i > -1) {
+                                    entry_history_array.splice(i, 1)
+                                }
+                                entry_history_array.push(ui.item.col_to_fill+ui.item.pinyin)
+                                localStorage[orig_col[0] + autofill_choices[0].orig_col] = entry_history_array.join(" ")
+                            }
                             if (index == autofill_data.length - 1) {
                                 col_to_fill_input.value=full_col_to_fill + ui.item.col_to_fill
                                 pinyin.value=full_pinyin + " " + ui.item.pinyin
@@ -362,4 +385,12 @@ function numlat (row) {
     car = car.replace(/eì/g, "èi"); 
     if (old != car)
         pinyin.value=car;
+}
+
+function supports_html5_storage() {
+    try {
+        return 'localStorage' in window && window['localStorage'] !== null;
+    } catch (e) {
+        return false;
+    }
 }

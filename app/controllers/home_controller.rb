@@ -30,9 +30,10 @@ class HomeController < ApplicationController
      #                                          }.sort {|a,b| a.freq_rank != -1 && b.freq_rank != -1 ? a.freq_rank <=> b.freq_rank 
      #                                                                                               : a.freq_rank != -1 ? -1 : 1}
      #                              }
-      autofill_data = entries.map { |e| e.map { |entry| { col_to_fill: entry.send(params[:col_to_fill]), 
+      autofill_data = entries.map { |e| e.map { |entry| { col_to_fill: entry.send(params[:col_to_fill]),
+                                                          orig_col: entry.send(params[:orig_col]), 
                                                           pinyin: entry.formatted_pinyin, 
-                                                          definition: entry.definitions, 
+                                                          definition: entry.definitions,
                                                           freq_count: entry.freq_count } 
                                               }.sort_by {|e| -e[:freq_count]}
                                   }
