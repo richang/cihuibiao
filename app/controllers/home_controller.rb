@@ -32,8 +32,10 @@ class HomeController < ApplicationController
      #                              }
       autofill_data = entries.map { |e| e.map { |entry| { col_to_fill: entry.send(params[:col_to_fill]),
                                                           orig_col: entry.send(params[:orig_col]), 
+                                                          traditional: entry.traditional,
+                                                          simplified: entry.simplified,
                                                           pinyin: entry.formatted_pinyin, 
-                                                          definition: entry.definitions,
+                                                          definitions: entry.definitions,
                                                           freq_count: entry.freq_count } 
                                               }.sort_by {|e| -e[:freq_count]}
                                   }

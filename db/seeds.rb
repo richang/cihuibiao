@@ -106,8 +106,8 @@ end
 # }
 
 
-#dictionary = 'cedict_ts.u8'
-dictionary = 'test_dictionary'
+dictionary = 'cedict_ts.u8'
+#dictionary = 'test_dictionary'
 
 File.foreach(dictionary) { |line| 
     traditional = line.split(' ')[0]

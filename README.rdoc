@@ -2,4 +2,4 @@
 
 View app at http://cihuibiao.herokuapp.com/
 
-This app is designed for Chinese language instructors with the purpose of simplifying the generation of vocabulary tables, an often tedious and time-consuming process. 
+This app is designed to simplify the process of creating vocabulary tables for Chinese language instruction. 

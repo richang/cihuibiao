@@ -132,6 +132,9 @@ function navigation(row, column) {
 
 function autofill(row, orig_col, col_to_fill) {
 
+    if (document.getElementById("disable_autofill").checked) {
+        return false
+    }
 	var orig_col_input = getInput(row, orig_col);
 	var col_to_fill_input = getInput(row, col_to_fill);
 	var pinyin = getInput(row, 'pinyin');
@@ -151,11 +154,78 @@ function autofill(row, orig_col, col_to_fill) {
             // autofill_data=JSON.parse(data)
             var autofill_data=data
             console.log(autofill_data)
-            var full_col_to_fill = ""
-            var full_pinyin = ""
+            var full_col_to_fill = []
+            var full_pinyin = []
+            var full_definition = []
+            var definition_autocomplete = function(index, item) {
+                var definition_history_array
+                var definitions_only = item.definitions.map(function(e) { return e.definition })
+                var autofill_choices = item.definitions.map(function(e) {
+                    e.label = e.definition
+                    return e
+                })
+                if (supports_html5_storage) {
+                    var definition_history = localStorage[item.traditional + item.simplified + item.pinyin]
+                    console.log(definition_history)
+                    definition_history_array = definition_history != undefined ? definition_history.split(" ") : []
+                    console.log(definition_history_array)
+                    autofill_choices = autofill_choices.map(function(e) {
+                        var definition_index = definitions_only.indexOf(e.definition).toString()
+                        console.log(e.definition)
+                        console.log(definition_index)
+                        e.definition_history = definition_history_array.indexOf(definition_index)
+                        console.log(e.definition_history)
+                        return e
+                    }).sort(function(a,b) {
+                        var i = b.definition_history - a.definition_history
+                        return i
+                    })
+                }
+                console.log(autofill_choices)
+                $("#"+row+getColumnNumber(orig_col)).autocomplete({
+                    source: autofill_choices,
+                    autoFocus: true,
+                    delay: 0,
+                    minLength: 0,
+                    select: function(event, ui) {
+                        event.preventDefault();
+                        if (supports_html5_storage && autofill_choices.length > 1) {
+                            var definition_index = definitions_only.indexOf(ui.item.definition).toString()
+                            var i = definition_history_array.indexOf(definition_index)
+                            if (i > -1) {
+                                definition_history_array.splice(i, 1)
+                            }
+                            definition_history_array.push(definition_index)
+                            localStorage[item.traditional + item.simplified + item.pinyin] = definition_history_array.join(" ")
+                        }
+                        full_definition.push(ui.item.definition)
+                        $("#"+row+getColumnNumber(orig_col)).autocomplete( "destroy" );
+                        if (index == autofill_data.length - 1) {
+                            col_to_fill_input.value=full_col_to_fill.join("")
+                            pinyin.value=full_pinyin.join(" ")
+                            definition.value = full_definition.join("; ")
+                            var table = getTable();
+                            var next_row = parseInt(row) + 1;
+                            if (next_row >= table.rows.length)
+                                addRows();
+                            getInput(next_row.toString(), orig_col).focus();
+                        } 
+                        else {
+                            generate_autocomplete(index+1)
+                        }
+                    },
+                    focus: function(event, ui) {
+                        event.preventDefault();
+                    },
+                    close: function(event, ui) {
+                        $("#"+row+getColumnNumber(orig_col)).autocomplete( "destroy" );
+                    }
+                })
+                $("#"+row+getColumnNumber(orig_col)).autocomplete( "search", "" );
+            }
             var generate_autocomplete = function(index) {
                 var entry_history_array
-                var autofill_choices=autofill_data[index].map(function(e) {
+                var autofill_choices = autofill_data[index].map(function(e) {
                     e.label = e.col_to_fill+" "+e.pinyin
                     return e
                 })
@@ -190,24 +260,30 @@ function autofill(row, orig_col, col_to_fill) {
                                 entry_history_array.push(ui.item.col_to_fill+ui.item.pinyin)
                                 localStorage[orig_col[0] + autofill_choices[0].orig_col] = entry_history_array.join(" ")
                             }
-                            if (index == autofill_data.length - 1) {
-                                col_to_fill_input.value=full_col_to_fill + ui.item.col_to_fill
-                                pinyin.value=full_pinyin + " " + ui.item.pinyin
+                            full_col_to_fill.push(ui.item.col_to_fill)
+                            full_pinyin.push(ui.item.pinyin)
+                            $("#"+row+getColumnNumber(orig_col)).autocomplete( "destroy" );
+                            if (!document.getElementById("disable_definition_autofill").checked) {
+                                definition_autocomplete(index, ui.item)
+                            }
+                            else if (index == autofill_data.length - 1) {
+                                col_to_fill_input.value=full_col_to_fill.join("")
+                                pinyin.value=full_pinyin.join(" ")
                                 var table = getTable();
                                 var next_row = parseInt(row) + 1;
                                 if (next_row >= table.rows.length)
                                     addRows();
                                 getInput(next_row.toString(), orig_col).focus();
-                                $("#"+row+getColumnNumber(orig_col)).autocomplete( "destroy" );
-                            } else {
-                                full_col_to_fill = full_col_to_fill + ui.item.col_to_fill
-                                full_pinyin = full_pinyin + " " + ui.item.pinyin
-                                $("#"+row+getColumnNumber(orig_col)).autocomplete( "destroy" );
+                            } 
+                            else {
                                 generate_autocomplete(index+1)
                             }
                         },
                         focus: function(event, ui) {
                             event.preventDefault();
+                        },
+                        close: function(event, ui) {
+                            $("#"+row+getColumnNumber(orig_col)).autocomplete( "destroy" );
                         }
                     })
                     $("#"+row+getColumnNumber(orig_col)).autocomplete( "search", "" );
@@ -248,19 +324,30 @@ function changeInputsToText() {
     getArrayofClass("edit_table").forEach(show);
     getArrayofClass("add_rows").forEach(hide);
     var table =  document.getElementById('cihuibiao');
+    while (table.rows[1] && getInputValue(1,0) == "" && getInputValue(1,1) == "") {
+        table.deleteRow(1)
+    }
+    for (var r = table.rows.length - 1; table.rows[r] && getInputValue(r,0) == "" && getInputValue(r,1) == ""; r--) {
+        table.deleteRow(r)
+    }
     for (var r = 1, n = table.rows.length; r < n; r++) {
-        if (getInputValue(r,0) == "") {
-            while (table.rows[r]) {
-                table.deleteRow(r);
-            }
-            break;
-        }
-        else {
-            for (var c = 0, m = table.rows[r].cells.length; c < m; c++) {
-                table.rows[r].cells[c].innerHTML = getInputValue(r,c);
-            }
+        for (var c = 0, m = table.rows[r].cells.length; c < m; c++) {
+            table.rows[r].cells[c].innerHTML = getInputValue(r,c);
         }
     }
+    // for (var r = 1, n = table.rows.length; r < n; r++) {
+    //     if (getInputValue(r,0) == "") {
+    //         while (table.rows[r]) {
+    //             table.deleteRow(r);
+    //         }
+    //         break;
+    //     }
+    //     else {
+    //         for (var c = 0, m = table.rows[r].cells.length; c < m; c++) {
+    //             table.rows[r].cells[c].innerHTML = getInputValue(r,c);
+    //         }
+    //     }
+    // }
 }
 
 function changeTextToInputs() {
