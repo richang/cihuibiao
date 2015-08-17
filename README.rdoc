@@ -3,3 +3,33 @@
 View app at http://cihuibiao.herokuapp.com/
 
 This app is designed to simplify the process of creating vocabulary tables for Chinese language instruction. 
+
+
+Usage:
+
+1. Type either traditional or simplified characters. Select from the dropdown list to automatically populate the other columns.
+
+2. To enter text in the pinyin column manually, type the pinyin followed by the tone number (e.g. lv4 se4) and the app will format it correctly.
+
+3. The program will automatically add more rows for you if you run out. You can also click on "Add More Rows" to manually add more rows.
+
+4. When you have finished preparing the table, click on "Prepare Table for Copying". You can then copy and paste the table into your Word document. If the copy-paste doesn't preserve the table formatting, follow the steps below:
+
+Click File, and then click Options.
+
+Click Advanced, and then scroll down to the Cut, copy, and paste section.
+
+Under Pasting from other programs, select Keep Source Formatting.
+
+Click OK.
+
+5. To make changes to the current table, click on "Edit Table". To start over with a new table, click "Reset Table".
+
+
+Acknowledgements:
+
+1. Dictionary data from the CC-CEDICT project: http://www.mdbg.net/chindict/chindict.php?page=cc-cedict
+
+2. Pinyin conversion algorithm from Lexilogos: http://www.lexilogos.com/keyboard/pinyin_conversion.htm
+
+3. Syllable frequency counts (for ordering choices) from http://technology.chtsai.org/syllable/
