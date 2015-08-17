@@ -15,13 +15,13 @@ This app is designed to simplify the process of creating vocabulary tables for C
 
 4. When you have finished preparing the table, click on "Prepare Table for Copying". You can then copy and paste the table into your Word document. If the copy-paste doesn't preserve the table formatting, follow the steps below:
 
- * Click File, and then click Options.
+   * Click File, and then click Options.
 
- * Click Advanced, and then scroll down to the Cut, copy, and paste section.
+   * Click Advanced, and then scroll down to the Cut, copy, and paste section.
 
- * Under Pasting from other programs, select Keep Source Formatting.
+   * Under Pasting from other programs, select Keep Source Formatting.
 
- * Click OK.
+   * Click OK.
 
 5. To make changes to the current table, click on "Edit Table". To start over with a new table, click "Reset Table".
 
